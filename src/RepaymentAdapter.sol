@@ -2,15 +2,13 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "./IRepaymentAdapter.sol";
 
-contract RepaymentAdapter {
-    error InvalidCurrencyAddress();
+contract RepaymentAdapter is IRepaymentAdapter {
+    using SafeERC20 for IERC20;
 
-    error InSufficientBalance();
-
-    error InvalidParameters();
-
-    error InvalidAllowance();
+    mapping(address => bool) public permitLoanContract;
 
     function approve(address currency, uint256 amount) public {
         if (!isContract(currency)) {
