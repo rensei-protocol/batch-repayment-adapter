@@ -23,7 +23,7 @@ revoke(address currency)
 ```
 
 ```js
-batchRevoke(address currency)
+batchRevoke(address[] calldata currency)
 ```
 
 ```js
