@@ -39,7 +39,7 @@ batchRevoke(address[] calldata currency)
 ```
 
 ```js
-batchRepayment(Repayment[x] calldata repayment)
+batchRepayment(Repayment[] calldata repayment)
 ```
 
 ## Admin Interfaces:
