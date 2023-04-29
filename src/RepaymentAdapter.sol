@@ -65,16 +65,20 @@ contract RepaymentAdapter is IRepaymentAdapter {
     function batchRepayment(Repayment[] calldata repayment) public {
         for (uint256 i = 0; i < repayment.length;) {
             // todo use adapter contract or just keep it simple
-
             int256 flag = permitLoanContract[repayment[i].loanContract];
             bytes memory data;
             if (flag == 1) {
+                require(isContract(repayment[i].collection), "Invalid collection address");
+                require(repayment[i].tokenId > 0, "Invalid token id");
+                require(repayment[i].amount > 0, "Invalid amount");
                 data = abi.encodeWithSignature(
                     "repay(address,uint256,uint256)", repayment[i].collection, repayment[i].tokenId, repayment[i].amount
                 );
             } else if (flag == 2) {
+                require(repayment[i].loanId > 0, "Invalid loan id");
                 data = abi.encodeWithSignature("repay(uint32)", repayment[i].loanId);
             } else if (flag == 3) {
+                require(repayment[i].loanId > 0, "Invalid loan id");
                 data = abi.encodeWithSignature("repay(uint32)", repayment[i].loanId);
             } else {
                 revert InvalidLoanContractAddress();
