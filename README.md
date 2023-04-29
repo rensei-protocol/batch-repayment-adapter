@@ -45,7 +45,7 @@ batchRepayment(Repayment[] calldata repayment)
 ## Admin Interfaces:
 
 ```js
-allowLoanContractAsSpender(address[] loanContract)
+allowLoanContractAsSpender(address[] calldata loanContract, string[] calldata name)
 ```
 
 ## Resource
