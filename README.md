@@ -42,11 +42,9 @@ batchRevoke(address[] calldata currency)
 batchRepayment(Repayment[] calldata repayment)
 ```
 
-## Admin Interfaces:
+## Deployment
 
-```js
-allowLoanContractAsSpender(address[] calldata loanContract, string[] calldata name)
-```
+- Ethereum Mainnet: 0x05cF2A5315941c997Dd981Dfa9CD113fd1f94767
 
 ## Resource
 
