@@ -23,22 +23,6 @@ struct Repayment{
 ## User Interfaces:
 
 ```js
-approve(address currency, uint256 amount)
-```
-
-```js
-batchApprove(address[] calldata currency, uint256[] calldata amount)
-```
-
-```js
-revoke(address currency)
-```
-
-```js
-batchRevoke(address[] calldata currency)
-```
-
-```js
 batchRepayment(Repayment[] calldata repayment)
 ```
 
