@@ -22,6 +22,7 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
         approve(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, 0x70b97A0da65C15dfb0FFA02aEE6FA36e507C2762);
         approve(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, 0xFa4D5258804D7723eb6A934c11b1bd423bC31623);
         approve(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, 0xE52Cec0E90115AbeB3304BaA36bc2655731f7934);
+        approve(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, 0xeF887e8b1C06209F59E8Ae55D0e625C937344376);
     }
 
     function approve(address currency, address operator) public onlyOwner {
@@ -57,14 +58,14 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
                 data = abi.encodeWithSignature("repay(uint32)", repayment[i].loanId);
             } else if (flag == 3) {
                 require(repayment[i].loanId > 0, "Invalid loan id");
-                data = abi.encodeWithSignature("repay(uint32)", repayment[i].loanId);
+                data = abi.encodeWithSignature("payBackLoan(uint32)", repayment[i].loanId);
             } else {
                 revert InvalidLoanContractAddress();
             }
             IERC20(repayment[i].currency).safeTransferFrom(msg.sender, address(this), repayment[i].amount);
             (bool success, bytes memory ret) = repayment[i].loanContract.call(data);
             if (!success) {
-                revert InvalidContractCall();
+                revert InvalidContractCall(bytesToHex(ret));
             }
 
             unchecked {
@@ -79,5 +80,19 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
             size := extcodesize(addr)
         }
         return size > 0;
+    }
+
+    function bytesToHex(bytes memory buffer) internal pure returns (string memory) {
+        // Fixed buffer size for hexadecimal convertion
+        bytes memory converted = new bytes(buffer.length * 2);
+
+        bytes memory _base = "0123456789abcdef";
+
+        for (uint256 i = 0; i < buffer.length; i++) {
+            converted[i * 2] = _base[uint8(buffer[i]) / _base.length];
+            converted[i * 2 + 1] = _base[uint8(buffer[i]) % _base.length];
+        }
+
+        return string(abi.encodePacked("0x", converted));
     }
 }

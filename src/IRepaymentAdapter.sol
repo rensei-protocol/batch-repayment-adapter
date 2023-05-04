@@ -21,5 +21,5 @@ interface IRepaymentAdapter {
 
     error InvalidAllowance();
 
-    error InvalidContractCall();
+    error InvalidContractCall(string);
 }
