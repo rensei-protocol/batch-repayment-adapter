@@ -71,10 +71,16 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
             } else {
                 revert InvalidLoanContractAddress();
             }
+            uint256 preBalance = IERC20(repayment[i].currency).balanceOf(address(this));
             IERC20(repayment[i].currency).safeTransferFrom(msg.sender, address(this), repayment[i].amount);
             (bool success, bytes memory ret) = repayment[i].loanContract.call(data);
             if (!success) {
                 revert InvalidContractCall(bytesToHex(ret));
+            }
+            uint256 postBalance = IERC20(repayment[i].currency).balanceOf(address(this));
+            if (postBalance > preBalance) {
+                // refund
+                IERC20(repayment[i].currency).transfer(msg.sender, postBalance - preBalance);
             }
 
             unchecked {
