@@ -3,9 +3,10 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IRepaymentAdapter.sol";
 
-contract RepaymentAdapter is IRepaymentAdapter {
+contract RepaymentAdapter is IRepaymentAdapter, Ownable {
     using SafeERC20 for IERC20;
 
     // 1. BendDAO
@@ -17,6 +18,26 @@ contract RepaymentAdapter is IRepaymentAdapter {
         permitLoanContract[0x70b97A0da65C15dfb0FFA02aEE6FA36e507C2762] = 1;
         permitLoanContract[0xFa4D5258804D7723eb6A934c11b1bd423bC31623] = 2;
         permitLoanContract[0xE52Cec0E90115AbeB3304BaA36bc2655731f7934] = 3;
+        // approve weth
+        approve(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, 0x70b97A0da65C15dfb0FFA02aEE6FA36e507C2762);
+        approve(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, 0xFa4D5258804D7723eb6A934c11b1bd423bC31623);
+        approve(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, 0xE52Cec0E90115AbeB3304BaA36bc2655731f7934);
+    }
+
+    function approve(address currency, address operator) public onlyOwner {
+        if (!isContract(currency)) {
+            revert InvalidCurrencyAddress();
+        }
+
+        IERC20(currency).approve(operator, type(uint256).max);
+    }
+
+    function revert(address currency, address operator) public onlyOwner {
+        if (!isContract(currency)) {
+            revert InvalidCurrencyAddress();
+        }
+
+        IERC20(currency).approve(operator, 0);
     }
 
     function batchRepayment(Repayment[] calldata repayment) public {
