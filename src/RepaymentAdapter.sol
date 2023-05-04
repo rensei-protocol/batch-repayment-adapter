@@ -33,12 +33,21 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
         IERC20(currency).approve(operator, type(uint256).max);
     }
 
-    function revert(address currency, address operator) public onlyOwner {
+    function revoke(address currency, address operator) public onlyOwner {
         if (!isContract(currency)) {
             revert InvalidCurrencyAddress();
         }
 
         IERC20(currency).approve(operator, 0);
+    }
+
+    function withdraw(address currency, uint256 amount) public onlyOwner {
+        if (currency == 0x0000000000000000000000000000000000000000) {
+            (bool sent,) = msg.sender.call{value: amount}("");
+            require(sent, "Failed to send Ether");
+        } else {
+            IERC20(currency).transfer(msg.sender, amount);
+        }
     }
 
     function batchRepayment(Repayment[] calldata repayment) public {
