@@ -18,11 +18,21 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
         permitLoanContract[0x70b97A0da65C15dfb0FFA02aEE6FA36e507C2762] = 1;
         permitLoanContract[0xFa4D5258804D7723eb6A934c11b1bd423bC31623] = 2;
         permitLoanContract[0xE52Cec0E90115AbeB3304BaA36bc2655731f7934] = 3;
-        // approve weth
+        // approve weth 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
         approve(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, 0x70b97A0da65C15dfb0FFA02aEE6FA36e507C2762);
         approve(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, 0xFa4D5258804D7723eb6A934c11b1bd423bC31623);
         approve(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, 0xE52Cec0E90115AbeB3304BaA36bc2655731f7934);
         approve(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, 0xeF887e8b1C06209F59E8Ae55D0e625C937344376);
+        // approve usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+        approve(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 0x70b97A0da65C15dfb0FFA02aEE6FA36e507C2762);
+        approve(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 0xFa4D5258804D7723eb6A934c11b1bd423bC31623);
+        approve(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 0xE52Cec0E90115AbeB3304BaA36bc2655731f7934);
+        approve(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 0xeF887e8b1C06209F59E8Ae55D0e625C937344376);
+        // approve dai 0x6B175474E89094C44Da98b954EedeAC495271d0F
+        approve(0x6B175474E89094C44Da98b954EedeAC495271d0F, 0x70b97A0da65C15dfb0FFA02aEE6FA36e507C2762);
+        approve(0x6B175474E89094C44Da98b954EedeAC495271d0F, 0xFa4D5258804D7723eb6A934c11b1bd423bC31623);
+        approve(0x6B175474E89094C44Da98b954EedeAC495271d0F, 0xE52Cec0E90115AbeB3304BaA36bc2655731f7934);
+        approve(0x6B175474E89094C44Da98b954EedeAC495271d0F, 0xeF887e8b1C06209F59E8Ae55D0e625C937344376);
     }
 
     function approve(address currency, address operator) public onlyOwner {
@@ -33,12 +43,30 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
         IERC20(currency).approve(operator, type(uint256).max);
     }
 
+    function batchApprove(address[] calldata currencies, address operator) public onlyOwner {
+        for (uint256 i = 0; i < currencies.length;) {
+            approve(currencies[i], operator);
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
     function revoke(address currency, address operator) public onlyOwner {
         if (!isContract(currency)) {
             revert InvalidCurrencyAddress();
         }
 
         IERC20(currency).approve(operator, 0);
+    }
+
+    function batchRevoke(address[] calldata currencies, address operator) public onlyOwner {
+        for (uint256 i = 0; i < currencies.length;) {
+            revoke(currencies[i], operator);
+            unchecked {
+                ++i;
+            }
+        }
     }
 
     function withdraw(address currency, uint256 amount) public onlyOwner {
