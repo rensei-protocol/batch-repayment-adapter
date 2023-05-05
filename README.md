@@ -8,6 +8,8 @@
 
 3. BatchRepayment then aggregates all repayment transactions, and invoke the loan contracts as the payer.
 
+4. Remaning funds returned by loan contracts would be returned to initiators.
+
 ## DataType
 
 ```js
