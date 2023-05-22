@@ -2,13 +2,11 @@
 pragma solidity ^0.8.13;
 
 interface IRepaymentAdapter {
-    struct Repayment {
+    struct BatchRepayment {
         address loanContract;
-        address collection;
         address currency;
-        uint256 tokenId;
         uint256 amount;
-        uint32 loanId;
+        bytes data;
     }
 
     error InvalidCurrencyAddress();
