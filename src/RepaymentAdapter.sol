@@ -5,9 +5,12 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IRepaymentAdapter.sol";
+import {IWETH9} from "./IWETH9.sol";
 
 contract RepaymentAdapter is IRepaymentAdapter, Ownable {
     using SafeERC20 for IERC20;
+
+    IWETH9 public constant WETH9 = IWETH9(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
 
     // 1. BendDAO
     // 2. X2Y2
@@ -95,7 +98,11 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
         }
     }
 
-    function batch(BatchRepayment[] calldata batchRepayment) public {
+    function batchRepayment(BatchRepayment[] calldata batchRepayment) public payable {
+        if (msg.value > 0) {
+            WETH9.deposit{value: msg.value}();
+            WETH9.transfer(msg.sender, msg.value);
+        }
         for (uint256 i = 0; i < batchRepayment.length;) {
             require(permitLoanContract[batchRepayment[i].loanContract] > 0, "invalid loan contract");
             uint256 preBalance = IERC20(batchRepayment[i].currency).balanceOf(address(this));

@@ -80,3 +80,12 @@ function payBackLoan(uint32 _loanId) external {
 function repay(uint32 _loanId) public {
 }
 ```
+
+### X2Y2 V3
+
+```
+function repay(uint32 _loanId) public {
+}
+```
+
+### Blur
