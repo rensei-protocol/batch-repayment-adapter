@@ -89,3 +89,19 @@ function repay(uint32 _loanId) public {
 ```
 
 ### Blur
+
+```
+struct Lien {
+    address lender;
+    address borrower;
+    ERC721 collection;
+    uint256 tokenId;
+    uint256 amount;
+    uint256 startTime;
+    uint256 rate;
+    uint256 auctionStartBlock;
+    uint256 auctionDuration;
+}
+
+function repay(Lien calldata lien, uint256 lienId)
+```
