@@ -18,7 +18,8 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
     // 2. X2Y2
     // 3. NFTFi
     // 4. X2Y2 V3
-    // 5. Blur
+    // 5. Blend
+    // 6. NFTFi private
     mapping(address => int256) public permitLoanContract;
 
     constructor() {
@@ -27,6 +28,7 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
         permitLoanContract[0xE52Cec0E90115AbeB3304BaA36bc2655731f7934] = 3;
         permitLoanContract[0xB81965DdFdDA3923f292a47A1be83ba3A36B5133] = 4;
         permitLoanContract[0x29469395eAf6f95920E59F858042f0e28D98a20B] = 5;
+        permitLoanContract[0x8252Df1d8b29057d1Afe3062bf5a64D503152BC8] = 6;
 
         // approve weth 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
         approve(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, 0x70b97A0da65C15dfb0FFA02aEE6FA36e507C2762);
@@ -34,6 +36,7 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
         approve(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, 0xE52Cec0E90115AbeB3304BaA36bc2655731f7934);
         approve(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, 0xB81965DdFdDA3923f292a47A1be83ba3A36B5133);
         approve(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, 0x29469395eAf6f95920E59F858042f0e28D98a20B);
+        approve(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, 0x8252Df1d8b29057d1Afe3062bf5a64D503152BC8);
         approve(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, 0xeF887e8b1C06209F59E8Ae55D0e625C937344376);
 
         // approve usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
@@ -42,6 +45,7 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
         approve(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 0xE52Cec0E90115AbeB3304BaA36bc2655731f7934);
         approve(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 0xB81965DdFdDA3923f292a47A1be83ba3A36B5133);
         approve(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 0x29469395eAf6f95920E59F858042f0e28D98a20B);
+        approve(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 0x8252Df1d8b29057d1Afe3062bf5a64D503152BC8);
         approve(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 0xeF887e8b1C06209F59E8Ae55D0e625C937344376);
 
         // approve dai 0x6B175474E89094C44Da98b954EedeAC495271d0F
@@ -50,6 +54,7 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
         approve(0x6B175474E89094C44Da98b954EedeAC495271d0F, 0xE52Cec0E90115AbeB3304BaA36bc2655731f7934);
         approve(0x6B175474E89094C44Da98b954EedeAC495271d0F, 0xB81965DdFdDA3923f292a47A1be83ba3A36B5133);
         approve(0x6B175474E89094C44Da98b954EedeAC495271d0F, 0x29469395eAf6f95920E59F858042f0e28D98a20B);
+        approve(0x6B175474E89094C44Da98b954EedeAC495271d0F, 0x8252Df1d8b29057d1Afe3062bf5a64D503152BC8);
         approve(0x6B175474E89094C44Da98b954EedeAC495271d0F, 0xeF887e8b1C06209F59E8Ae55D0e625C937344376);
     }
 
@@ -124,7 +129,7 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
                     IERC20(batchRepayment[i].currency).transfer(msg.sender, postBalance - preBalance);
                 }
             } else {
-                // if it is blur, convert eth, weth to beth
+                // if it is blend, convert eth, weth to beth
                 uint256 preBalance = BlurPool.balanceOf(address(this));
                 IERC20(batchRepayment[i].currency).safeTransferFrom(msg.sender, address(this), batchRepayment[i].amount);
                 WETH9.withdraw(batchRepayment[i].amount);
