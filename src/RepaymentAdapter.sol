@@ -139,7 +139,7 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
                     // withdraw beth and refund
                     uint256 toWithdraw = postBalance - preBalance;
                     BlurPool.withdraw(toWithdraw);
-                    msg.sender.transfer(toWithdraw);
+                    payable(msg.sender).transfer(toWithdraw);
                 }
             }
 
