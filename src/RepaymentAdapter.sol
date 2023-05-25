@@ -6,11 +6,13 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IRepaymentAdapter.sol";
 import {IWETH9} from "./IWETH9.sol";
+import {IBlurPool} from "./IBlurPool.sol";
 
 contract RepaymentAdapter is IRepaymentAdapter, Ownable {
     using SafeERC20 for IERC20;
 
     IWETH9 public constant WETH9 = IWETH9(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
+    IBlurPool public constant BlurPool = IBlurPool(0x0000000000A39bb272e79075ade125fd351887Ac);
 
     // 1. BendDAO
     // 2. X2Y2
@@ -99,24 +101,48 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
     }
 
     function batchRepayment(BatchRepayment[] calldata batchRepayment) public payable {
-        if (msg.value > 0) {
-            WETH9.deposit{value: msg.value}();
-            WETH9.transfer(msg.sender, msg.value);
-        }
         for (uint256 i = 0; i < batchRepayment.length;) {
-            require(permitLoanContract[batchRepayment[i].loanContract] > 0, "invalid loan contract");
-            uint256 preBalance = IERC20(batchRepayment[i].currency).balanceOf(address(this));
-            IERC20(batchRepayment[i].currency).safeTransferFrom(msg.sender, address(this), batchRepayment[i].amount);
-            (bool success, bytes memory ret) = batchRepayment[i].loanContract.call(batchRepayment[i].data);
-            if (!success) {
-                revert InvalidContractCall(bytesToHex(ret));
+            int256 loanContractIndex = permitLoanContract[batchRepayment[i].loanContract];
+            require(loanContractIndex > 0, "invalid loan contract");
+
+            if (loanContractIndex != 5) {
+                // if it is not blend, convert eth to weth for users
+                if (msg.value > 0) {
+                    WETH9.deposit{value: msg.value}();
+                    WETH9.transfer(msg.sender, msg.value);
+                }
+                uint256 preBalance = IERC20(batchRepayment[i].currency).balanceOf(address(this));
+                IERC20(batchRepayment[i].currency).safeTransferFrom(msg.sender, address(this), batchRepayment[i].amount);
+                (bool success, bytes memory ret) = batchRepayment[i].loanContract.call(batchRepayment[i].data);
+                if (!success) {
+                    revert InvalidContractCall(bytesToHex(ret));
+                }
+                uint256 postBalance = IERC20(batchRepayment[i].currency).balanceOf(address(this));
+                require(postBalance >= preBalance, "invalid amount");
+                if (postBalance > preBalance) {
+                    // refund
+                    IERC20(batchRepayment[i].currency).transfer(msg.sender, postBalance - preBalance);
+                }
+            } else {
+                // if it is blur, convert eth, weth to beth
+                uint256 preBalance = BlurPool.balanceOf(address(this));
+                IERC20(batchRepayment[i].currency).safeTransferFrom(msg.sender, address(this), batchRepayment[i].amount);
+                WETH9.withdraw(batchRepayment[i].amount);
+                BlurPool.deposit{value: batchRepayment[i].amount + msg.value}();
+                (bool success, bytes memory ret) = batchRepayment[i].loanContract.call(batchRepayment[i].data);
+                if (!success) {
+                    revert InvalidContractCall(bytesToHex(ret));
+                }
+                uint256 postBalance = BlurPool.balanceOf(address(this));
+                require(postBalance >= preBalance, "invalid amount");
+                if (postBalance > preBalance) {
+                    // withdraw beth and refund
+                    uint256 toWithdraw = postBalance - preBalance;
+                    BlurPool.withdraw(toWithdraw);
+                    msg.sender.transfer(toWithdraw);
+                }
             }
-            uint256 postBalance = IERC20(batchRepayment[i].currency).balanceOf(address(this));
-            require(postBalance >= preBalance, "invalid amount");
-            if (postBalance > preBalance) {
-                // refund
-                IERC20(batchRepayment[i].currency).transfer(msg.sender, postBalance - preBalance);
-            }
+
             unchecked {
                 ++i;
             }
