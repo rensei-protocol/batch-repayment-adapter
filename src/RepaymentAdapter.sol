@@ -122,7 +122,7 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
                 IERC20(batchRepayment[i].currency).safeTransferFrom(msg.sender, address(this), batchRepayment[i].amount);
                 (bool success, bytes memory ret) = batchRepayment[i].loanContract.call(batchRepayment[i].data);
                 if (!success) {
-                    revert InvalidContractCall(bytesToHex(ret));
+                    revert InvalidContractCall();
                 }
                 uint256 postBalance = IERC20(batchRepayment[i].currency).balanceOf(address(this));
                 require(postBalance >= preBalance, "invalid amount");
@@ -133,7 +133,7 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
             } else {
                 // if it is blend, convert eth, weth to beth
                 uint256 preBalance = BlurPool.balanceOf(address(this));
-                if (batchRepayment[i].amount != 0) {
+                if (batchRepayment[i].amount > 0) {
                     IERC20(batchRepayment[i].currency).safeTransferFrom(
                         msg.sender, address(this), batchRepayment[i].amount
                     );
@@ -143,7 +143,7 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
                 BlurPool.deposit{value: batchRepayment[i].amount + msg.value}();
                 (bool success, bytes memory ret) = batchRepayment[i].loanContract.call(batchRepayment[i].data);
                 if (!success) {
-                    revert InvalidContractCall(bytesToHex(ret));
+                    revert InvalidContractCall();
                 }
                 uint256 postBalance = BlurPool.balanceOf(address(this));
                 require(postBalance >= preBalance, "invalid amount");
@@ -175,19 +175,5 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
             size := extcodesize(addr)
         }
         return size > 0;
-    }
-
-    function bytesToHex(bytes memory buffer) internal pure returns (string memory) {
-        // Fixed buffer size for hexadecimal convertion
-        bytes memory converted = new bytes(buffer.length * 2);
-
-        bytes memory _base = "0123456789abcdef";
-
-        for (uint256 i = 0; i < buffer.length; i++) {
-            converted[i * 2] = _base[uint8(buffer[i]) / _base.length];
-            converted[i * 2 + 1] = _base[uint8(buffer[i]) % _base.length];
-        }
-
-        return string(abi.encodePacked("0x", converted));
     }
 }

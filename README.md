@@ -30,7 +30,7 @@ batchRepayment(Repayment[] calldata repayment)
 
 ## Deployment
 
-- Ethereum Mainnet: 0x162A5Be0Ce0425472d5bC496CDd0669135f36458
+- Ethereum Mainnet: 0x8a5323616bd6bb65a03c8ecf575a6025bbac052f
 
 ## Resource
 
