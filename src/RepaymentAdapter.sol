@@ -9,6 +9,8 @@ import {IWETH9} from "./IWETH9.sol";
 import {IBlurPool} from "./IBlurPool.sol";
 
 contract RepaymentAdapter is IRepaymentAdapter, Ownable {
+    event Received(address, uint256);
+
     using SafeERC20 for IERC20;
 
     IWETH9 public constant WETH9 = IWETH9(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
@@ -131,8 +133,13 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
             } else {
                 // if it is blend, convert eth, weth to beth
                 uint256 preBalance = BlurPool.balanceOf(address(this));
-                IERC20(batchRepayment[i].currency).safeTransferFrom(msg.sender, address(this), batchRepayment[i].amount);
-                WETH9.withdraw(batchRepayment[i].amount);
+                if (batchRepayment[i].amount != 0) {
+                    IERC20(batchRepayment[i].currency).safeTransferFrom(
+                        msg.sender, address(this), batchRepayment[i].amount
+                    );
+                    WETH9.withdraw(batchRepayment[i].amount);
+                }
+
                 BlurPool.deposit{value: batchRepayment[i].amount + msg.value}();
                 (bool success, bytes memory ret) = batchRepayment[i].loanContract.call(batchRepayment[i].data);
                 if (!success) {
@@ -152,6 +159,14 @@ contract RepaymentAdapter is IRepaymentAdapter, Ownable {
                 ++i;
             }
         }
+    }
+
+    receive() external payable {
+        emit Received(msg.sender, msg.value);
+    }
+
+    function withdrawWETH(uint256 amount) public onlyOwner {
+        WETH9.withdraw(amount);
     }
 
     function isContract(address addr) internal view returns (bool) {
